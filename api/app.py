@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from langchain.prompts import ChatPromptTemplate
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langserve import add_routes
 import uvicorn
 import os
 from langchain_community.llms import Ollama
 from dotenv import load_dotenv
 
-load_dotenv(I)
+load_dotenv()
 
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
