@@ -167,3 +167,6 @@ research/kidney-CT-Scan-data.zip
 research/kidney-CT-Scan-data.zip
 # Ignore PDF files
 *.pdf
+
+# Ignore all .txt files
+*.txt
