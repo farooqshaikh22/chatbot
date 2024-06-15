@@ -36,30 +36,28 @@ def vector_embeddings():
     
     if "db" not in st.session_state:
         
-  
         st.session_state.embeddings = OllamaEmbeddings()
         
-        st.session_state.loader = PyPDFDirectoryLoader("./us_census")
+        st.session_state.loader = PyPDFDirectoryLoader("./groq/us_census")
         
         st.session_state.docs = st.session_state.loader.load()
         
         st.session_state.text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000,
                                                                         chunk_overlap=200)
         
-        st.session_state.documents = st.session_state.text_splitter.split_documents(st.session_state.docs)
+        st.session_state.documents = st.session_state.text_splitter.split_documents(st.session_state.docs[:5])
         
         st.session_state.db = FAISS.from_documents(documents=st.session_state.documents,
                          embedding=st.session_state.embeddings)   
         
         
-
 question = st.text_input("Enter your question from documents")
 
-if st.button("Document Embedding"):   
+if st.button("Document Embedding"): 
+    
     vector_embeddings()
     
-
-    
+      
 if question: 
     document_chain = create_stuff_documents_chain(llm,prompt)
     retriever = st.session_state.db.as_retriever()

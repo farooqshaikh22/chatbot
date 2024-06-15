@@ -13,3 +13,4 @@ chromadb
 faiss-cpu
 wikipedia
 langchain_groq
+langchain_objectbox
