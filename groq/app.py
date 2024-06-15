@@ -34,7 +34,7 @@ prompt = ChatPromptTemplate.from_template(
 
 def vector_embeddings():
     
-    if "vector" not in st.session_state:
+    if "db" not in st.session_state:
         
   
         st.session_state.embeddings = OllamaEmbeddings()
@@ -58,11 +58,12 @@ question = st.text_input("Enter your question from documents")
 if st.button("Document Embedding"):   
     vector_embeddings()
     
-document_chain = create_stuff_documents_chain(llm,prompt)
-retriever = st.session_state.db.as_retriever()
-retriever_chain = create_retrieval_chain(retriever,document_chain)
+
     
 if question: 
+    document_chain = create_stuff_documents_chain(llm,prompt)
+    retriever = st.session_state.db.as_retriever()
+    retriever_chain = create_retrieval_chain(retriever,document_chain)
     response = retriever_chain.invoke({"input":question})
     st.write(response["answer"])
     
