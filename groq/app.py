@@ -57,6 +57,8 @@ if st.button("Document Embedding"):
     
     vector_embeddings()
     
+    st.success("Documents have been embedded successfully!")
+    
       
 if question: 
     document_chain = create_stuff_documents_chain(llm,prompt)
