@@ -8,7 +8,6 @@ from langchain_community.vectorstores.pinecone import Pinecone as LangchainPinec
 from pinecone import Pinecone as PineconeClient, ServerlessSpec
 from langchain_core.prompts import ChatPromptTemplate,PromptTemplate
 
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,10 +17,7 @@ together_api_key = os.environ["TOGETHER_AI_API_KEY"]
 
 together_ai = Together(api_key=together_api_key)
 
-
 embeddings_model = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-
-#print(embeddings_model)
 
 # Initialize Pinecone client
 print("Initializing Pinecone...")
@@ -34,11 +30,8 @@ except Exception as e:
 
 index_name = "langchain-chatbot"
 
-index = LangchainPinecone.from_existing_index(index_name=index_name,embedding=embeddings_model)
+index = LangchainPinecone.from_existing_index(index_name=index_name, embedding=embeddings_model)
 
-    
-## Prompt template
-# Prompt template
 # Prompt template
 prompt_template = """
 Use the following pieces of information to answer the user's question.
@@ -58,74 +51,73 @@ retriever = index.as_retriever(search_kwargs={'k': 3})
 # Streamlit application
 st.title("Medical Chatbot with Together AI, Langchain, and Pinecone")
 
-## Initialize session state for conversational history
-
+# Initialize session state for conversation history
 if "requests" not in st.session_state:
     st.session_state["requests"] = []
-    
+
 if "responses" not in st.session_state:
-    st.session_state["responses"] = ["How can i assist you !"]
+    st.session_state["responses"] = ["How can I assist you!"]
 
-## User input and Chatbot interaction
-
+# User input and Chatbot interaction
 user_query = st.text_input("Enter Your Query...")
+print("\n" + "="*50)
 print(f"user_query : {user_query}")
+print("="*50 + "\n")
 if user_query:
-    
     conversation = ""
-    
     for i in range(len(st.session_state['responses'])):
         if len(st.session_state['requests']) > i:
             conversation += f"User: {st.session_state['requests'][i]}\n"
         if len(st.session_state['responses']) > i:
             conversation += f"Bot: {st.session_state['responses'][i]}\n"
 
-# Fetch relevant documents from Pinecone
-docs = retriever.get_relevant_documents(user_query)
-print(f"Docs : {docs}")
+    # Fetch relevant documents from Pinecone
+    docs = retriever.get_relevant_documents(user_query)
+    print("\n" + "="*50)
+    print(f"Docs : {docs}")
+    print("="*50 + "\n")
 
-# Extract context from the documents
-context_list = [doc.page_content for doc in docs]
-print(f" Context List : {context_list}")
-context = "\n".join(context_list)
-print(f" Context : {context}")
-# Construct the prompt
-qa_prompt = PROMPT.format(context=context, question=user_query)
-print(f"qa_prompt : {qa_prompt}")
+    # Extract context from the documents
+    context_list = [doc.page_content for doc in docs]
+    print("\n" + "="*50)
+    print(f"Context List : {context_list}")
+    print("="*50 + "\n")
+    context = "\n".join(context_list)
+    print("\n" + "="*50)
+    print(f"Context : {context}")
+    print("="*50 + "\n")
 
+    # Construct the prompt
+    qa_prompt = PROMPT.format(context=context, question=user_query)
+    print("\n" + "="*50)
+    print(f"qa_prompt : {qa_prompt}")
+    print("="*50 + "\n")
 
+    response = together_ai.chat.completions.create(
+        model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+        messages=[{"role": "user", "content": qa_prompt}]
+    )
+    print("\n" + "="*50)
+    print(f"response : {response}")
+    print("="*50 + "\n")
+    bot_response = response.choices[0].message.content
+    print("\n" + "="*50)
+    print(f"bot_response : {bot_response}")
+    print("="*50 + "\n")
 
-# ## Find matches from Pinecone index
-# results = index.similarity_search(user_query,k=3)
+    # Store the query and response in session state
+    st.session_state["requests"].append(user_query)
+    st.session_state["responses"].append(bot_response)
 
-# # Extract context from Pinecone results
-# context = ""
-# for match in results:
-#     context += match.page_content + "\n"
-
-
-response = together_ai.chat.completions.create(model="mistralai/Mixtral-8x7B-Instruct-v0.1",
-                                    messages=[{"role":"user","content":qa_prompt}])
-
-print(f"response : {response}")
-bot_response = response.choices[0].message.content
-print(f"bot_response : {bot_response}")
-# Store the query and response in session state
-
-st.session_state["requests"].append(user_query)
-st.session_state["responses"].append(bot_response)
-
-## display bot response
-
-st.write("Bot Response :")
-st.write(bot_response)
+    # Display bot response
+    st.write("Bot Response :")
+    st.write(bot_response)
 
 # Display conversation history
 st.subheader("Conversation History:")
 for i in range(len(st.session_state['responses'])):
     if len(st.session_state['requests']) > i:
-        st.text(f"{st.session_state['requests'][i]}")
+        st.text(f"User: {st.session_state['requests'][i]}")
     if len(st.session_state['responses']) > i:
-        st.text(f"{st.session_state['responses'][i]}")
-
+        st.text(f"Bot: {st.session_state['responses'][i]}")
 
